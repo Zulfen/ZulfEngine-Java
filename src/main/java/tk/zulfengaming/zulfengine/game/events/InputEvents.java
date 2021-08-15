@@ -5,7 +5,7 @@ import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 
-public class Input {
+public class InputEvents {
 
     private final boolean[] lastKeyPressed = new boolean[GLFW.GLFW_KEY_LAST];
     private final boolean[] lastMousePressed = new boolean[GLFW.GLFW_MOUSE_BUTTON_LAST];
@@ -16,7 +16,7 @@ public class Input {
     private final GLFWCursorPosCallback mousePosCallback;
     private final GLFWMouseButtonCallback mouseButtonCallback;
 
-    public Input(long windowHandleIn) {
+    public InputEvents(long windowHandleIn) {
 
         this.keyboardCallback = new GLFWKeyCallback() {
             @Override

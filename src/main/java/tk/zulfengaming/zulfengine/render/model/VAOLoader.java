@@ -1,14 +1,14 @@
 package tk.zulfengaming.zulfengine.render.model;
 
-import de.matthiasmann.twl.utils.PNGDecoder;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.stb.STBImage;
+import org.lwjgl.system.CallbackI;
 import tk.zulfengaming.zulfengine.render.utils.Texture;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -53,6 +53,10 @@ public class VAOLoader {
         // deletes every VBO registered from OGL
         for (int vbo : vbos) {
             GL15.glDeleteBuffers(vbo);
+        }
+
+        for (int texture : textures) {
+            GL15.glDeleteTextures(texture);
         }
     }
 
@@ -112,19 +116,15 @@ public class VAOLoader {
 
     }
 
-    // must be in PNG format
-    public Texture loadTexture(String filePath) throws IOException {
+    public Texture loadTextureFromFile(String filePath) throws IOException {
 
-        // loads the image in with the PNG decoder
-        PNGDecoder decoder = new PNGDecoder(new FileInputStream(filePath));
+        // creates IntBuffers so STBI can load our image
 
-        // creates a byte buffer to store RGBA values
-        ByteBuffer buffer = ByteBuffer.allocateDirect(
-                4 * decoder.getWidth() * decoder.getHeight());
-        decoder.decode(buffer, decoder.getWidth() * 4, PNGDecoder.Format.RGBA);
+        IntBuffer width = BufferUtils.createIntBuffer(1);
+        IntBuffer height = BufferUtils.createIntBuffer(1);
+        IntBuffer channels = BufferUtils.createIntBuffer(1);
 
-        // flips the image so it can be read
-        buffer.flip();
+        ByteBuffer buffer = STBImage.stbi_load(filePath, width, height, channels, STBImage.STBI_rgb_alpha);
 
         // creates a blank texture and returns its ID
         int textureID = GL11.glGenTextures();
@@ -143,13 +143,42 @@ public class VAOLoader {
         // uploads our texture data
         // texture type, level of detail (for mipmapping), the internal format, width, height, border, format, type of
         // data and our data
-        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, decoder.getWidth(), decoder.getHeight(), 0
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width.get(0), height.get(0), 0
         , GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
         // generates our mipmap
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
 
-        return new Texture(textureID, buffer);
+        return new Texture(textureID, width.get(0), height.get(0));
+
+    }
+
+    public Texture loadTextureFromMemory(ByteBuffer data, int width, int height) {
+
+        // creates a blank texture and returns its ID
+        int textureID = GL11.glGenTextures();
+        textures.add(textureID);
+
+        // binds the texture
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, textureID);
+
+        // tells OGL how to unpack our bytes
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+
+        // describes our texture filtering
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+
+        // uploads our texture data
+        // texture type, level of detail (for mipmapping), the internal format, width, height, border, format, type of
+        // data and our data
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, width, height, 0
+                , GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, data);
+
+        // generates our mipmap
+        GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
+
+        return new Texture(textureID, width, height);
 
     }
 

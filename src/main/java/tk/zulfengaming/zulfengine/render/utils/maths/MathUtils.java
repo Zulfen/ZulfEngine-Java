@@ -2,6 +2,7 @@ package tk.zulfengaming.zulfengine.render.utils.maths;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.lwjgl.system.CallbackI;
 import tk.zulfengaming.zulfengine.render.Camera;
 
 public class MathUtils {
@@ -28,28 +29,13 @@ public class MathUtils {
 
     }
 
-    // this is just gonna be copied. i know what it does in practise but not the maths behind it
     public static Matrix4f createProjectionMatrix(int displayWidth, int displayHeight, float fov,
     float nearPlane, float farPlane) {
 
         // calculates the aspect ratio of the display
         float aspectRatio = (float) displayWidth / (float) displayHeight;
 
-        float yScale = (float) ((1f / Math.tan(Math.toRadians(fov / 2))) * aspectRatio);
-        float xScale = yScale / aspectRatio;
-
-        float frustumLength = farPlane - nearPlane;
-
-        Matrix4f projMatrix = new Matrix4f();
-
-        projMatrix.m00(xScale);
-        projMatrix.m11(yScale);
-        projMatrix.m22(-((farPlane + nearPlane) / frustumLength));
-        projMatrix.m23(-1);
-        projMatrix.m32(-((2 * nearPlane * farPlane) / frustumLength));
-        projMatrix.m33(0);
-
-        return projMatrix;
+        return new Matrix4f().perspective((float) Math.toRadians(fov), aspectRatio, nearPlane, farPlane);
 
     }
 
@@ -64,9 +50,9 @@ public class MathUtils {
         viewMatrix.rotate((float) Math.toRadians(camera.getRoll()), new Vector3f(1, 0, 1));
 
         Vector3f cameraPos = camera.getPosition();
-        Vector3f inverseCameraPos = cameraPos.negate();
+        Vector3f inverseCameraPos = new Vector3f(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
-        // translates it in the opposite direction
+        //translates it in the opposite direction
         viewMatrix.translate(inverseCameraPos);
 
         return viewMatrix;

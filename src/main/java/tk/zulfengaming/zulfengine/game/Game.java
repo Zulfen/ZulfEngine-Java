@@ -1,7 +1,8 @@
 package tk.zulfengaming.zulfengine.game;
 
 import org.lwjgl.glfw.GLFW;
-import tk.zulfengaming.zulfengine.game.events.Input;
+import tk.zulfengaming.zulfengine.game.events.InputEvents;
+import tk.zulfengaming.zulfengine.game.events.WindowEvents;
 import tk.zulfengaming.zulfengine.render.DisplayInstance;
 import tk.zulfengaming.zulfengine.render.MainRenderer;
 import tk.zulfengaming.zulfengine.render.shader.SimpleShader;
@@ -12,7 +13,8 @@ public class Game  {
 
     private final MainRenderer renderer;
 
-    private final Input inputEvents;
+    private final InputEvents inputEvents;
+    private final WindowEvents windowEvents;
 
     public Game() {
 
@@ -20,10 +22,11 @@ public class Game  {
             throw new IllegalStateException("Failed to initialise GLFW");
         }
 
-        this.displayInstance = new DisplayInstance(800, 600, "GLFW Test");
+        this.displayInstance = new DisplayInstance(800, 600, "ZulfEngine");
         this.renderer = new MainRenderer(displayInstance, new SimpleShader());
 
-        this.inputEvents = new Input(displayInstance.getWindowHandle());
+        this.inputEvents = new InputEvents(displayInstance.getWindowHandle());
+        this.windowEvents = new WindowEvents(renderer);
     }
 
     public void render() {
@@ -36,12 +39,21 @@ public class Game  {
 
     public void update() {
 
+        if (inputEvents.isKeyDown(GLFW.GLFW_KEY_S)) {
+            renderer.getCamera().moveZ(0.01f);
+        }
+        if (inputEvents.isKeyDown(GLFW.GLFW_KEY_W)) {
+            renderer.getCamera().moveZ(-0.01f);
+        }
+        if (inputEvents.isKeyDown(GLFW.GLFW_KEY_A)) {
+            renderer.getCamera().moveX(-0.01f);
+        }
+        if (inputEvents.isKeyDown(GLFW.GLFW_KEY_D)) {
+            renderer.getCamera().moveX(0.01f);
+        }
+
         GLFW.glfwPollEvents();
 
-    }
-
-    public DisplayInstance getDisplayInstance() {
-        return displayInstance;
     }
 
     public void run() {
@@ -57,11 +69,13 @@ public class Game  {
 
         GLFW.glfwTerminate();
 
-
     }
 
-    public Input getInputEvents() {
+    public InputEvents getInputEvents() {
         return inputEvents;
     }
 
+    public WindowEvents getWindowEvents() {
+        return windowEvents;
+    }
 }

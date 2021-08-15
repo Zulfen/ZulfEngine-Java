@@ -6,73 +6,50 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
+import org.lwjgl.system.CallbackI;
 import tk.zulfengaming.zulfengine.game.entity.Entity;
+import tk.zulfengaming.zulfengine.render.model.FileMeshLoader;
 import tk.zulfengaming.zulfengine.render.model.WorldModel;
 import tk.zulfengaming.zulfengine.render.model.VAOLoader;
 import tk.zulfengaming.zulfengine.render.shader.SimpleShader;
+import tk.zulfengaming.zulfengine.render.utils.Texture;
 import tk.zulfengaming.zulfengine.render.utils.maths.MathUtils;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 public class MainRenderer {
 
     private Entity cote;
     private Entity zulf;
-    private SimpleShader simpleShader;
+    private final SimpleShader simpleShader;
+
+    private final DisplayInstance displayInstance;
+
+    private final Camera camera;
+
     private final VAOLoader vaoLoader;
+    private final FileMeshLoader fileMeshLoader;
 
     public MainRenderer(DisplayInstance displayIn, SimpleShader shaderIn) {
 
+        this.displayInstance = displayIn;
         this.vaoLoader = new VAOLoader();
+        this.fileMeshLoader = new FileMeshLoader(vaoLoader);
 
-        Matrix4f projectionMatrix = MathUtils.createProjectionMatrix(displayIn.getWidth(), displayIn.getHeight(),
-                150, 0.1f, 1000f);
-
+        this.camera = new Camera();
+        camera.setPosition(new Vector3f(0, 0, 0));
         this.simpleShader = shaderIn;
 
-        simpleShader.enable();
-        simpleShader.loadProjMat(projectionMatrix);
-        simpleShader.disable();
+        resizeRenderer(displayIn.getWidth(), displayIn.getHeight());
 
-        float[] vertices = {
-                -0.5f, 0.5f, 0f,//v0
-                -0.5f, -0.5f, 0f,//v1
-                0.5f, -0.5f, 0f,//v2
-                0.5f, 0.5f, 0f,//v3
-        };
+        WorldModel model = fileMeshLoader.loadMeshFromFile("C:\\Users\\passj\\Desktop\\cube.obj", "C:\\Users\\passj\\Desktop\\");
 
-        int[] indices = {
-            0, 1, 3, // left triangle
-            3, 1, 2 // right triangle
-        };
+        cote = new Entity(model, new Vector3f(0 ,0, 0), 0, 0, 0, 1);
 
-        float[] textureCoords = {
-                0, 0,
-                0, 1,
-                1, 1,
-                1, 0
-        };
-
-        try {
-
-            WorldModel coteModel = new WorldModel(vertices, indices, textureCoords,
-                    vaoLoader.loadTexture("D:\\Java\\ZulfEngine\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\utils\\textures\\cote.png"), vaoLoader);
-
-            WorldModel zulfModel = new WorldModel(vertices, indices, textureCoords,
-                    vaoLoader.loadTexture("D:\\Java\\ZulfEngine\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\utils\\textures\\zulf.png"), vaoLoader);
-
-            cote = new Entity(coteModel, new Vector3f(0.0f ,0, -1), 0, 0, 0, 1);
-            zulf = new Entity(zulfModel, new Vector3f(0.0f ,0, -5), 0, 0, 0, 1);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
-    public void renderModel(Entity entityIn, SimpleShader shaderIn) {
-
-        // enables the shader for change
-        shaderIn.enable();
+    public void renderEntity(Entity entityIn, SimpleShader shaderIn) {
 
         // binds the VAO we want to use
         GL30.glBindVertexArray(entityIn.getModel().getVboMesh().getVaoID());
@@ -83,7 +60,6 @@ public class MainRenderer {
         // enables the VBO in index 1 of the VAO (texture coords)
         GL20.glEnableVertexAttribArray(1);
 
-
         // creates a transformation matrix from our entity's data
         Matrix4f transformationMatrix = MathUtils.createTransformationMatrix(entityIn.getPosition(), entityIn.getRotationX(),
                 entityIn.getRotationY(), entityIn.getRotationZ(), entityIn.getScale());
@@ -91,32 +67,51 @@ public class MainRenderer {
         // loads our transformation matrix into our given shader
         shaderIn.loadTransMat(transformationMatrix);
 
-        // enables texture bank 0
         GL13.glActiveTexture(GL13.GL_TEXTURE0);
 
-        // binds to our texture we defined!
-        GL11.glBindTexture(GL11.GL_TEXTURE_2D, entityIn.getModel().getTexture().getId());
+        GL11.glBindTexture(GL11.GL_TEXTURE_2D, entityIn.getModel().getTextures().get(0).getId());
 
         // draws it! we specify we want triangles to be drawn w/ the indices
-        GL11.glDrawElements(GL11.GL_TRIANGLES, entityIn.getModel().getVboMesh().getVertexCount(), GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(GL11.GL_TRIANGLES, entityIn.getModel().getIndices().length, GL11.GL_UNSIGNED_INT, 0);
 
         // disables the VAO in index <number> of the VAO
         GL20.glDisableVertexAttribArray(0);
 
+        // disables the VAO in index <number> of the VAO
+        GL20.glDisableVertexAttribArray(1);
+
         // disables the VAO we are using!
         GL30.glBindVertexArray(0);
 
-        // disables the shader to stop change
-        shaderIn.disable();
+    }
+
+    public void resizeRenderer(int width, int height) {
+
+        Matrix4f projectionMatrix = MathUtils.createProjectionMatrix(width, height,
+                70, 0.1f, 1000f);
+
+        simpleShader.enable();
+
+        simpleShader.loadProjMat(projectionMatrix);
+
+        simpleShader.disable();
+
+        GL11.glViewport(0, 0, width, height);
 
     }
+
     public void render() {
 
-        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
-        GL11.glClearColor(0,0, 0, 0);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glClear(GL11.GL_COLOR_BUFFER_BIT|GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glClearColor(0, 0f, 0.0f, 1);
 
-        renderModel(cote, simpleShader);
-        renderModel(zulf, simpleShader);
+        simpleShader.enable();
+        simpleShader.loadViewMat(camera);
+
+        renderEntity(cote, simpleShader);
+
+        simpleShader.disable();
 
     }
 
@@ -128,11 +123,15 @@ public class MainRenderer {
         return cote;
     }
 
-    public Entity getZulf() {
-        return zulf;
+    public Camera getCamera() {
+        return camera;
     }
 
     public SimpleShader getSimpleShader() {
         return simpleShader;
+    }
+
+    public DisplayInstance getDisplayInstance() {
+        return displayInstance;
     }
 }

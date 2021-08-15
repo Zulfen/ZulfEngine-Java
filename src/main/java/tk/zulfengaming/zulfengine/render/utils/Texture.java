@@ -1,19 +1,23 @@
 package tk.zulfengaming.zulfengine.render.utils;
 
-import java.nio.ByteBuffer;
-
 public class Texture {
 
     private final int id;
-    private final ByteBuffer imageData;
+    private final int width;
+    private final int height;
 
-    public Texture(int id, ByteBuffer dataIn) {
+    public Texture(int id, int widthIn, int heightIn) {
         this.id = id;
-        this.imageData = dataIn;
+        this.width = widthIn;
+        this.height = heightIn;
     }
 
-    public ByteBuffer getImageData() {
-        return imageData;
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 
     public int getId() {

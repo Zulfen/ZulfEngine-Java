@@ -42,6 +42,19 @@ public class Camera {
         position.z += dz;
     }
 
+    public void changeYaw(float delta) {
+        System.out.println(delta);
+        yaw += delta;
+    }
+
+    public void changeRoll(float delta) {
+        roll += delta;
+    }
+
+    public void changePitch(float delta) {
+        pitch += delta;
+    }
+
     public float getPitch() {
         return pitch;
     }
