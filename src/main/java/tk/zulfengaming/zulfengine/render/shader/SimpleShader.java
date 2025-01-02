@@ -6,8 +6,9 @@ import tk.zulfengaming.zulfengine.render.utils.maths.MathUtils;
 
 public class SimpleShader extends ShaderProgram {
 
-    private final static String VERTEX_SHADER_PATH = "D:\\Java\\ZulfEngine\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\shader\\shaders\\vertex.vs";
-    private final static String FRAGMENT_SHADER_PATH = "D:\\Java\\ZulfEngine\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\shader\\shaders\\fragment.vs";
+    // Quick hack to get this to not use hardcoded paths
+    private final static String VERTEX_SHADER_PATH = System.getProperty("user.dir") + "\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\shader\\shaders\\vertex.vs";
+    private final static String FRAGMENT_SHADER_PATH = System.getProperty("user.dir") +"\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\shader\\shaders\\fragment.vs";
 
     // i probably should implement a system so i dont have to define these manually
     // but kind of tired

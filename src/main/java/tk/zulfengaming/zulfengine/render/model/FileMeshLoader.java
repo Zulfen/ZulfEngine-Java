@@ -35,7 +35,7 @@ public class FileMeshLoader {
                 | Assimp.aiProcess_JoinIdenticalVertices);
 
         if (loadedModel == null) {
-            throw new IllegalStateException("Error loading model: " + modelPath);
+            throw new IllegalStateException("Error loading model: " + Assimp.aiGetErrorString());
         }
 
         // loads the vertices and indices

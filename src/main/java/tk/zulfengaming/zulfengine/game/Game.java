@@ -40,16 +40,16 @@ public class Game  {
     public void update() {
 
         if (inputEvents.isKeyDown(GLFW.GLFW_KEY_S)) {
-            renderer.getCamera().moveZ(0.01f);
+            renderer.getCamera().moveZ(1f);
         }
         if (inputEvents.isKeyDown(GLFW.GLFW_KEY_W)) {
-            renderer.getCamera().moveZ(-0.01f);
+            renderer.getCamera().moveZ(-1f);
         }
         if (inputEvents.isKeyDown(GLFW.GLFW_KEY_A)) {
-            renderer.getCamera().moveX(-0.01f);
+            renderer.getCamera().moveX(-1f);
         }
         if (inputEvents.isKeyDown(GLFW.GLFW_KEY_D)) {
-            renderer.getCamera().moveX(0.01f);
+            renderer.getCamera().moveX(1f);
         }
 
         GLFW.glfwPollEvents();

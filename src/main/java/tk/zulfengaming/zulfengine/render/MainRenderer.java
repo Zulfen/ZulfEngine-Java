@@ -6,21 +6,16 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
-import org.lwjgl.system.CallbackI;
 import tk.zulfengaming.zulfengine.game.entity.Entity;
 import tk.zulfengaming.zulfengine.render.model.FileMeshLoader;
 import tk.zulfengaming.zulfengine.render.model.WorldModel;
 import tk.zulfengaming.zulfengine.render.model.VAOLoader;
 import tk.zulfengaming.zulfengine.render.shader.SimpleShader;
-import tk.zulfengaming.zulfengine.render.utils.Texture;
 import tk.zulfengaming.zulfengine.render.utils.maths.MathUtils;
-
-import java.io.IOException;
-import java.util.Iterator;
 
 public class MainRenderer {
 
-    private Entity cote;
+    private Entity testEntity;
     private Entity zulf;
     private final SimpleShader simpleShader;
 
@@ -38,14 +33,17 @@ public class MainRenderer {
         this.fileMeshLoader = new FileMeshLoader(vaoLoader);
 
         this.camera = new Camera();
-        camera.setPosition(new Vector3f(0, 0, 0));
+        camera.setPosition(new Vector3f(10, 0, 0));
         this.simpleShader = shaderIn;
 
         resizeRenderer(displayIn.getWidth(), displayIn.getHeight());
 
-        WorldModel model = fileMeshLoader.loadMeshFromFile("C:\\Users\\passj\\Desktop\\cube.obj", "C:\\Users\\passj\\Desktop\\");
+        // Another quick hack to remove hardcoded paths from when I was testing this ages ago.
+        // Model from https://github.com/garykac/3d-cubes/blob/master/cube-tex.obj
+        WorldModel model = fileMeshLoader.loadMeshFromFile(System.getProperty("user.dir") + "\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\model\\models\\scrubPine.obj",
+                System.getProperty("user.dir") + "\\src\\main\\java\\tk\\zulfengaming\\zulfengine\\render\\model\\models");
 
-        cote = new Entity(model, new Vector3f(0 ,0, 0), 0, 0, 0, 1);
+        testEntity = new Entity(model, new Vector3f(0 ,0, 0), 0f, 0f, 0f, 0.08f);
 
     }
 
@@ -109,7 +107,7 @@ public class MainRenderer {
         simpleShader.enable();
         simpleShader.loadViewMat(camera);
 
-        renderEntity(cote, simpleShader);
+        renderEntity(testEntity, simpleShader);
 
         simpleShader.disable();
 
@@ -120,7 +118,7 @@ public class MainRenderer {
     }
 
     public Entity getCote() {
-        return cote;
+        return testEntity;
     }
 
     public Camera getCamera() {
